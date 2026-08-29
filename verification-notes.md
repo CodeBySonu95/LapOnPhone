@@ -26,3 +26,13 @@ Chapter 03 mission passed through the simulated Explorer: controlled Ctrl+L focu
 Chapter 04 loaded the browser simulator with tab strip, toolbar, address bar, search page, and the keyboard mission panel. A controlled Ctrl+L event is used for the same in-page validation because sandbox browser shortcut commands are reported with Meta modifiers.
 
 Chapter 04 browser mission passed: controlled Ctrl+L focused the address bar and advanced to 25%, entering “typing practice” and pressing Enter rendered a simulated search result at 50%, controlled Ctrl+T opened a second virtual tab at 75%, and controlled Alt+Left returned to the practice page and completed the chapter. Course meter reached 4 / 4 complete and all four chapter rows showed completion checks.
+
+## Professional laptop upgrade verification
+
+The development preview exposes 77 clickable virtual-key buttons plus a touchpad surface. The on-screen layout includes Ctrl, Alt, Win, Shift, function keys, navigation keys, and visible held-modifier instructions. The published domain was still on the previous checkpoint during the first test, so the updated laptop experience must be checkpointed before public verification. A browser scroll limitation occurred because the preview viewport reported no scroll container; full-page screenshot verification confirmed the laptop deck is present.
+
+The latest development preview verified the clickable keyboard: the Win key begins Chapter 01 as a desktop action, then virtual Arrow Down, Enter, and Escape completed the mission at 100%. A full Notepad flow was also verified through virtual keyboard clicks: typing a 33-character note, then Ctrl+A, Ctrl+C, and Ctrl+V reached DONE and changed the simulated status to “Copied & pasted”.
+
+## Professional laptop simulator verification
+
+After switching Vite to the repository root, the development preview loads from the new root `index.html`; the browser title is “Typing Yatra — Laptop Simulator” and the English-first chapter labels render correctly. The live preview exposes the full on-screen laptop keyboard and touchpad. The fixed virtual Win-key flow completed Chapter 01 using Win, Arrow Down, Enter, and Escape. The virtual Notepad flow completed through on-screen typing plus Ctrl+A, Ctrl+C, and Ctrl+V. A controlled touchpad click updated the visible status to “Click registered” and the notice to “Click detected on the practice touchpad.”

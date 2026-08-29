@@ -61,8 +61,8 @@ const chapters: Chapter[] = [
   {
     id: "desktop",
     number: "01",
-    title: "Desktop se dosti",
-    subtitle: "Windows, Start menu और windows",
+    title: "Desktop Basics",
+    subtitle: "Windows, Start menu & window control",
     app: "Desktop",
     icon: Monitor,
     color: "coral",
@@ -78,8 +78,8 @@ const chapters: Chapter[] = [
   {
     id: "notepad",
     number: "02",
-    title: "Notepad में लिखें",
-    subtitle: "Type, select, copy और paste",
+    title: "Write in Notepad",
+    subtitle: "Type, select, copy & paste",
     app: "Notepad",
     icon: FileText,
     color: "blue",
@@ -95,8 +95,8 @@ const chapters: Chapter[] = [
   {
     id: "explorer",
     number: "03",
-    title: "Files को संभालें",
-    subtitle: "Explorer, folders, rename और Delete",
+    title: "Manage Files",
+    subtitle: "Explorer, folders, rename & Delete",
     app: "File Explorer",
     icon: Folder,
     color: "green",
@@ -112,8 +112,8 @@ const chapters: Chapter[] = [
   {
     id: "browser",
     number: "04",
-    title: "Browser mission",
-    subtitle: "Tabs, address bar और back",
+    title: "Browser Mission",
+    subtitle: "Tabs, address bar & back",
     app: "Browser",
     icon: Globe2,
     color: "gold",
@@ -134,6 +134,15 @@ const chapterKeyGroups: Record<ChapterId, string[]> = {
   explorer: ["Ctrl", "L", "F2", "Del"],
   browser: ["Ctrl", "L", "T", "Alt ←"],
 };
+
+const virtualKeyRows = [
+  ["Esc", "F1", "F2", "F3", "F4", "F5", "F6", "F7", "F8", "F9", "F10", "F11", "F12"],
+  ["`", "1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "-", "=", "Backspace"],
+  ["Tab", "Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P", "[", "]", "\\"],
+  ["Caps Lock", "A", "S", "D", "F", "G", "H", "J", "K", "L", ";", "'", "Enter"],
+  ["Shift", "Z", "X", "C", "V", "B", "N", "M", ",", ".", "/", "Shift"],
+  ["Ctrl", "Fn", "Win", "Alt", "Space", "Alt", "Ctrl", "←", "↑", "↓", "→"],
+];
 
 const taskbarApps = [
   { label: "Explorer", icon: Folder },
@@ -167,8 +176,10 @@ export default function Home() {
   const [startOpen, setStartOpen] = useState(false);
   const [startSelection, setStartSelection] = useState(0);
   const [activeWindow, setActiveWindow] = useState<"settings" | "notepad" | "explorer" | "browser" | null>(null);
-  const [notice, setNotice] = useState("Simulator ready — next action नीचे दिख रही है।");
+  const [notice, setNotice] = useState("Simulator ready — your next action is highlighted.");
   const [pulseKey, setPulseKey] = useState("");
+  const [heldKeys, setHeldKeys] = useState<string[]>([]);
+  const [touchpadMessage, setTouchpadMessage] = useState("Touchpad ready");
   const [notepadText, setNotepadText] = useState("");
   const [notepadPasteCount, setNotepadPasteCount] = useState(0);
   const [explorerPath, setExplorerPath] = useState("This PC");
@@ -189,6 +200,8 @@ export default function Home() {
     setActiveWindow(activeChapter === "notepad" ? "notepad" : activeChapter === "explorer" ? "explorer" : activeChapter === "browser" ? "browser" : null);
     setNotice("Simulator ready — next action नीचे दिख रही है।");
     setPulseKey("");
+    setHeldKeys([]);
+    setTouchpadMessage("Touchpad ready");
     setNotepadText("");
     setNotepadPasteCount(0);
     setExplorerPath("This PC");
@@ -207,6 +220,8 @@ export default function Home() {
     setStepIndex(0);
     setStartOpen(false);
     setNotice("Chapter खुल गया — पहले task से शुरू करें।");
+    setHeldKeys([]);
+    setTouchpadMessage("Touchpad ready");
     setNotepadText("");
     setNotepadPasteCount(0);
     setExplorerPath("This PC");
@@ -383,6 +398,57 @@ export default function Home() {
     }
   };
 
+  const virtualAction = (label: string) => {
+    if (label === "Win") return "Windows";
+    if (label === "↓") return "ArrowDown";
+    if (label === "↑") return "ArrowUp";
+    if (label === "←") return "ArrowLeft";
+    if (label === "→") return "ArrowRight";
+    if (label === "Del") return "Delete";
+    if (label === "Space") return "Space";
+    if (label === "Esc") return "Escape";
+    return label;
+  };
+
+  const handleVirtualKey = (label: string) => {
+    setPulseKey(label);
+    window.setTimeout(() => setPulseKey(""), 150);
+    const modifiers = ["Ctrl", "Alt", "Shift", "Win"];
+    if (label === "Win" && activeChapter === "desktop" && stepIndex === 0) {
+      registerDesktopKey("Windows");
+      return;
+    }
+    if (modifiers.includes(label)) {
+      setHeldKeys((current) => current.includes(label) ? current.filter((item) => item !== label) : [...current, label]);
+      setNotice(heldKeys.includes(label) ? `${label} released.` : `${label} held — now click the next key to make a shortcut.`);
+      return;
+    }
+    const action = virtualAction(label);
+    const modifier = heldKeys.includes("Ctrl") ? "Ctrl" : heldKeys.includes("Alt") ? "Alt" : heldKeys.includes("Win") ? "Win" : heldKeys.includes("Shift") ? "Shift" : "";
+    const chord = modifier ? `${modifier}+${action}` : action;
+    setHeldKeys([]);
+
+    if (activeChapter === "desktop") registerDesktopKey(chord);
+    if (activeChapter === "explorer") registerExplorerKey(chord);
+    if (activeChapter === "browser") registerBrowserKey(chord);
+    if (activeChapter === "notepad") {
+      if (modifier) {
+        registerNotepadKey(chord);
+      } else if (!chapterComplete) {
+        if (action === "Backspace") setNotepadText((value) => value.slice(0, -1));
+        else if (action === "Enter") setNotepadText((value) => `${value}\\n`);
+        else if (action === "Space") setNotepadText((value) => `${value} `);
+        else if (action.length === 1) setNotepadText((value) => `${value}${action}`);
+        setNotice("Virtual keyboard input added. Keep typing until the note is complete.");
+      }
+    }
+  };
+
+  const handleTouchpad = (action: string) => {
+    setTouchpadMessage(action === "double" ? "Double-click registered" : action === "right" ? "Right-click registered" : "Click registered");
+    setNotice(`${action === "double" ? "Double-click" : action === "right" ? "Right-click" : "Click"} detected on the practice touchpad.`);
+  };
+
   const lessonProgress = Math.round((stepIndex / chapter.steps.length) * 100);
   const nextDisplay = chapter.id === "desktop" ? currentStep?.key : chapter.id === "notepad" && stepIndex === 0 ? "TYPE" : currentStep?.key;
   const completedCount = completedChapters.length;
@@ -409,7 +475,7 @@ export default function Home() {
       <main id="simulator" className="sim-layout">
         <aside className="chapter-rail">
           <div className="rail-label">YOUR COMPUTER COURSE</div>
-          <div className="course-title"><h1>Chapter<br /><i>mode.</i></h1><p>Computer को इस्तेमाल करके सीखिए। हर chapter एक असली task है।</p></div>
+          <div className="course-title"><h1>Computer<br /><i>practice.</i></h1><p>Learn by doing. हर chapter एक real laptop task है।</p></div>
           <div className="course-meter"><div><span>COURSE PROGRESS</span><strong>{completedCount} / 4 complete</strong></div><div className="course-meter-track"><span style={{ width: `${(completedCount / 4) * 100}%` }} /></div></div>
           <nav className="chapter-list" aria-label="Course chapters">
             <span className="chapter-list-label">CHAPTERS <em>click to practice</em></span>
@@ -425,7 +491,7 @@ export default function Home() {
             })}
             <div className="future-chapter"><span className="future-icon"><LockKeyhole size={14} /></span><span><small>CHAPTER 05</small><strong>Daily mission</strong><em>unlock after all chapters</em></span></div>
           </nav>
-          <div className="rail-note"><Sparkles size={15} /><span><strong>Keyboard rule</strong><br />mouse से नहीं—पहले key से सोचिए।</span></div>
+          <div className="rail-note"><Sparkles size={15} /><span><strong>Keyboard rule</strong><br />Use the keyboard first, mouse second.</span></div>
         </aside>
 
         <section className="simulator-column">
@@ -454,6 +520,22 @@ export default function Home() {
               {activeWindow === "browser" && <div className="fake-window browser-window"><div className="browser-tabs">{Array.from({ length: browserTabCount }).map((_, index) => <div key={index} className={`browser-tab ${index === browserTabCount - 1 ? "active" : ""}`}><Globe2 size={11} /><span>{index === 0 ? "Typing Yatra" : "New tab"}</span><X size={11} /></div>)}<button className="new-tab" onClick={() => registerBrowserKey("Ctrl+T")}><span>+</span></button><div className="browser-window-actions"><span>—</span><Maximize2 size={12} /><X size={13} /></div></div><div className="browser-toolbar"><button><ArrowLeft size={14} /></button><button><ArrowRight size={14} /></button><button><RotateCcw size={13} /></button><div className={`browser-address ${browserAddressFocused ? "focused" : ""}`}><ShieldCheck size={12} />{browserAddressFocused ? <input value={browserUrl} onChange={(event) => setBrowserUrl(event.target.value)} onKeyDown={handleBrowserAddressKeyDown} autoFocus aria-label="Browser address bar" /> : <span>{browserUrl}</span>}</div><Menu size={15} /></div><div className="browser-page">{browserSearched ? <><span className="search-result-kicker">TYPING YATRA SEARCH</span><h3>How to use a computer keyboard</h3><p>Home row, shortcuts और daily practice से typing confidence बनता है।</p><div className="result-line"><Check size={13} /> result opened by keyboard</div></> : <><Globe2 size={29} /><h3>Welcome to the practice web</h3><p>Ctrl + L दबाकर address bar चुनें और अपना search लिखें।</p></>}</div></div>}
 
               <div className="sim-taskbar"><button className={`start-button ${startOpen ? "active" : ""}`} onClick={() => registerDesktopKey("Windows")} aria-label="Open Start menu"><PanelsTopLeft size={17} /></button><div className="taskbar-search"><Search size={12} /><span>Type to search</span></div><div className="taskbar-pinned">{taskbarApps.map((item) => { const Icon = item.icon; return <button key={item.label} onClick={() => setNotice(`${item.label} खोलने का सही तरीका chapter mission में सीखेंगे।`)}><Icon size={15} /></button>; })}</div><div className="taskbar-tray"><span className="tray-time">10:24 AM<br /><small>Wed, 28 Aug</small></span><Wifi size={13} /><BatteryCharging size={14} /><ChevronDown size={13} /></div></div>
+            </div>
+          </div>
+
+          <div className="laptop-deck" aria-label="Virtual laptop keyboard and touchpad">
+            <div className="keyboard-hardware">
+              <div className="keyboard-label"><span>Typing Yatra laptop keyboard</span><span>{heldKeys.length ? `Held: ${heldKeys.join(" + ")}` : "Click a modifier, then an action key"}</span></div>
+              <div className="virtual-keyboard">
+                {virtualKeyRows.map((row, rowIndex) => <div className={`virtual-key-row row-${rowIndex}`} key={rowIndex}>
+                  {row.map((label, keyIndex) => <button key={`${rowIndex}-${keyIndex}-${label}`} className={`virtual-key ${label.length > 4 ? "wide-key" : ""} ${heldKeys.includes(label) ? "held" : ""} ${pulseKey === label ? "key-pulse" : ""}`} onClick={() => handleVirtualKey(label)} aria-pressed={heldKeys.includes(label)}>{label}</button>)}
+                </div>)}
+              </div>
+            </div>
+            <div className="touchpad-hardware">
+              <div className="touchpad-label"><span>Precision touchpad</span><span>{touchpadMessage}</span></div>
+              <div className="touchpad-surface" onClick={() => handleTouchpad("single")} onDoubleClick={() => handleTouchpad("double")} onContextMenu={(event) => { event.preventDefault(); handleTouchpad("right"); }} role="button" tabIndex={0} aria-label="Practice touchpad"><MousePointer2 size={17} /><span>Move, click, double-click</span></div>
+              <div className="touchpad-click-zones"><button onClick={() => handleTouchpad("left")}>L click</button><button onClick={() => handleTouchpad("right")}>R click</button></div>
             </div>
           </div>
 
