@@ -28,3 +28,13 @@
 - [x] Add professional English-forward copy with concise Hindi learning cues.
 - [x] Test keyboard, touchpad, chord flows, responsive layout, and root entry.
 - [x] Push the updated source to GitHub.
+
+## GitHub Pages and cursor training fix
+
+- [ ] Diagnose the white screen and Pages source configuration.
+- [ ] Add `/LapOnPhone/` base-path support and a GitHub Pages workflow.
+- [ ] Add a visible cursor inside the simulated screen.
+- [ ] Make touchpad movement map to cursor movement and add click/double/right-click states.
+- [ ] Add a drag practice interaction and keyboard/mouse mode labels.
+- [ ] Test the production Pages build and interaction flows.
+- [ ] Push the fix to GitHub and verify the Pages URL.

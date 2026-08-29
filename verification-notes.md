@@ -36,3 +36,7 @@ The latest development preview verified the clickable keyboard: the Win key begi
 ## Professional laptop simulator verification
 
 After switching Vite to the repository root, the development preview loads from the new root `index.html`; the browser title is “Typing Yatra — Laptop Simulator” and the English-first chapter labels render correctly. The live preview exposes the full on-screen laptop keyboard and touchpad. The fixed virtual Win-key flow completed Chapter 01 using Win, Arrow Down, Enter, and Escape. The virtual Notepad flow completed through on-screen typing plus Ctrl+A, Ctrl+C, and Ctrl+V. A controlled touchpad click updated the visible status to “Click registered” and the notice to “Click detected on the practice touchpad.”
+
+## GitHub Pages and cursor-fix verification
+
+The GitHub Pages URL was confirmed white because Pages was using legacy root publishing against the React/TypeScript source tree. The development preview now uses the repository root entry and a Pages base path build. Pointer movement on the touchpad was tested in-page: a controlled pointer move updated the visible cursor style to `left: 22%; top: 68%` and the touchpad label to `Cursor 22%, 68%`.

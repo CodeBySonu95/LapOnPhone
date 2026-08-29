@@ -180,6 +180,8 @@ export default function Home() {
   const [pulseKey, setPulseKey] = useState("");
   const [heldKeys, setHeldKeys] = useState<string[]>([]);
   const [touchpadMessage, setTouchpadMessage] = useState("Touchpad ready");
+  const [cursorPosition, setCursorPosition] = useState({ x: 83, y: 78 });
+  const [cursorDragging, setCursorDragging] = useState(false);
   const [notepadText, setNotepadText] = useState("");
   const [notepadPasteCount, setNotepadPasteCount] = useState(0);
   const [explorerPath, setExplorerPath] = useState("This PC");
@@ -198,10 +200,12 @@ export default function Home() {
     setStartOpen(false);
     setStartSelection(0);
     setActiveWindow(activeChapter === "notepad" ? "notepad" : activeChapter === "explorer" ? "explorer" : activeChapter === "browser" ? "browser" : null);
-    setNotice("Simulator ready — next action नीचे दिख रही है।");
+    setNotice("Simulator ready — your next action is highlighted.");
     setPulseKey("");
     setHeldKeys([]);
     setTouchpadMessage("Touchpad ready");
+    setCursorPosition({ x: 83, y: 78 });
+    setCursorDragging(false);
     setNotepadText("");
     setNotepadPasteCount(0);
     setExplorerPath("This PC");
@@ -219,9 +223,11 @@ export default function Home() {
     setActiveWindow(nextWindow);
     setStepIndex(0);
     setStartOpen(false);
-    setNotice("Chapter खुल गया — पहले task से शुरू करें।");
+    setNotice("Chapter opened — your first task is highlighted.");
     setHeldKeys([]);
     setTouchpadMessage("Touchpad ready");
+    setCursorPosition({ x: 83, y: 78 });
+    setCursorDragging(false);
     setNotepadText("");
     setNotepadPasteCount(0);
     setExplorerPath("This PC");
@@ -398,6 +404,14 @@ export default function Home() {
     }
   };
 
+  const updateCursorFromTouchpad = (event: React.PointerEvent<HTMLDivElement>) => {
+    const rect = event.currentTarget.getBoundingClientRect();
+    const x = Math.min(96, Math.max(4, ((event.clientX - rect.left) / rect.width) * 100));
+    const y = Math.min(94, Math.max(6, ((event.clientY - rect.top) / rect.height) * 100));
+    setCursorPosition({ x, y });
+    setTouchpadMessage(cursorDragging ? "Dragging pointer" : `Cursor ${Math.round(x)}%, ${Math.round(y)}%`);
+  };
+
   const virtualAction = (label: string) => {
     if (label === "Win") return "Windows";
     if (label === "↓") return "ArrowDown";
@@ -513,6 +527,9 @@ export default function Home() {
 
               {activeWindow === "settings" && <div className="fake-window settings-window"><div className="fake-window-bar"><span><Settings size={13} /> Settings</span><div><button><Maximize2 size={12} /></button><button onClick={() => setActiveWindow(null)}><X size={14} /></button></div></div><div className="settings-body"><div className="settings-sidebar"><strong>Settings</strong><span className="setting-selected"><Monitor size={13} /> System</span><span><Wifi size={13} /> Network</span><span><ShieldCheck size={13} /> Privacy</span></div><div className="settings-content"><span className="settings-breadcrumb">System &gt; About</span><h3>Welcome to your PC</h3><p>आपने keyboard से Settings window खोली है। अब Esc दबाकर desktop पर लौटें।</p><div className="setting-card"><Monitor size={20} /><span><strong>Practice PC</strong><small>Typing Yatra Virtual Machine</small></span><Check size={16} /></div></div></div></div>}
 
+              <div className="virtual-cursor" style={{ left: `${cursorPosition.x}%`, top: `${cursorPosition.y}%` }} aria-label="Virtual cursor"><MousePointer2 size={19} /></div>
+              <div className={`cursor-target ${cursorDragging ? "dragging" : ""}`}><span />Touchpad target</div>
+
               {activeWindow === "notepad" && <div className="fake-window notepad-window"><div className="fake-window-bar"><span><FileText size={13} /> Untitled — Notepad</span><div><button><Maximize2 size={12} /></button><button onClick={() => setActiveWindow(null)}><X size={14} /></button></div></div><div className="notepad-menu"><span>File</span><span>Edit</span><span>View</span><span>Help</span><span className="notepad-save"><Check size={11} /> auto-save</span></div><textarea value={notepadText} onChange={(event) => { setNotepadText(event.target.value); if (event.target.value.trim().length >= 28 && stepIndex === 0) setNotice("Note तैयार है। अब Ctrl + A से पूरा text select करें।"); }} onKeyDown={handleNotepadKeyDown} placeholder="यहां अपना practice note टाइप करें..." aria-label="Notepad practice area" autoFocus /><div className="notepad-status"><span>Ln 1, Col {notepadText.length + 1}</span><span>{notepadPasteCount > 0 ? "Copied & pasted" : "UTF-8"}</span></div></div>}
 
               {activeWindow === "explorer" && <div className="fake-window explorer-window"><div className="fake-window-bar"><span><Folder size={13} /> File Explorer</span><div><button><Maximize2 size={12} /></button><button onClick={() => setActiveWindow(null)}><X size={14} /></button></div></div><div className="explorer-toolbar"><button><ArrowLeft size={13} /></button><button><ArrowRight size={13} /></button><button><ChevronDown size={13} /></button><div className={`explorer-address ${explorerAddressFocused ? "focused" : ""}`}><Folder size={13} />{explorerAddressFocused ? <input value={explorerPath} onChange={(event) => setExplorerPath(event.target.value)} onKeyDown={handleExplorerAddressKeyDown} autoFocus aria-label="Explorer address bar" /> : <span>{explorerPath}</span>}</div><Search size={14} /></div><div className="explorer-body"><div className="explorer-sidebar"><span><Folder size={13} /> Quick access</span><span><Monitor size={13} /> Desktop</span><span className="selected"><Folder size={13} /> Documents</span><span><HardDrive size={13} /> This PC</span><span><Trash2 size={13} /> Recycle Bin</span></div><div className="explorer-content"><div className="explorer-breadcrumb">This PC <ChevronRight size={12} /> Documents</div><div className="file-grid"><div className={`file-tile ${explorerFileState === "deleted" ? "file-deleted" : ""}`}><FileText size={27} /><span>{explorerFileState === "renamed" ? "practice-note.txt" : explorerFileState === "deleted" ? "(in Recycle Bin)" : "lesson-note.txt"}</span><small>{explorerFileState === "deleted" ? "deleted" : "TXT · 2 KB"}</small></div><div className="file-tile"><Folder size={27} /><span>Keyboard basics</span><small>folder</small></div></div></div></div></div>}
@@ -534,7 +551,7 @@ export default function Home() {
             </div>
             <div className="touchpad-hardware">
               <div className="touchpad-label"><span>Precision touchpad</span><span>{touchpadMessage}</span></div>
-              <div className="touchpad-surface" onClick={() => handleTouchpad("single")} onDoubleClick={() => handleTouchpad("double")} onContextMenu={(event) => { event.preventDefault(); handleTouchpad("right"); }} role="button" tabIndex={0} aria-label="Practice touchpad"><MousePointer2 size={17} /><span>Move, click, double-click</span></div>
+              <div className="touchpad-surface" onPointerMove={updateCursorFromTouchpad} onPointerDown={(event) => { setCursorDragging(true); updateCursorFromTouchpad(event); }} onPointerUp={() => { setCursorDragging(false); setTouchpadMessage("Pointer released"); }} onPointerLeave={() => setCursorDragging(false)} onClick={() => handleTouchpad("single")} onDoubleClick={() => handleTouchpad("double")} onContextMenu={(event) => { event.preventDefault(); handleTouchpad("right"); }} role="button" tabIndex={0} aria-label="Practice touchpad"><MousePointer2 size={17} /><span>Move, click, double-click</span></div>
               <div className="touchpad-click-zones"><button onClick={() => handleTouchpad("left")}>L click</button><button onClick={() => handleTouchpad("right")}>R click</button></div>
             </div>
           </div>
