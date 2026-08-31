@@ -40,3 +40,11 @@ After switching Vite to the repository root, the development preview loads from 
 ## GitHub Pages and cursor-fix verification
 
 The GitHub Pages URL was confirmed white because Pages was using legacy root publishing against the React/TypeScript source tree. The development preview now uses the repository root entry and a Pages base path build. Pointer movement on the touchpad was tested in-page: a controlled pointer move updated the visible cursor style to `left: 22%; top: 68%` and the touchpad label to `Cursor 22%, 68%`.
+
+GitHub Pages diagnosis: `https://codebysonu95.github.io/LapOnPhone/` initially served a white screen because legacy root publishing delivered the raw React entry (`/client/src/main.tsx`) and because the app route did not match the repository subpath. The Pages build endpoint reported status `built` for commit `ac92c7f`; after the route fix, a cache-busted live request at `https://codebyson95.github.io/LapOnPhone/?cache=92c7f2` rendered the simulator with the desktop, full virtual keyboard, touchpad, and chapter missions. The browser’s normal cache may still show older content until refreshed.
+
+## Focused simulator refactor verification
+
+Live development preview: `https://3000-itybnmqimww72we4u3em1-b6e5b8f8.sg2.manus.computer/`. The focused UI now renders as one full virtual laptop with no chapter rail or mission cards. The desktop includes icons for This PC, Documents, Recycle Bin, Notepad, and Browser; taskbar launchers; a movable pointer; a full clickable keyboard; and a touchpad. Clicking the Notepad taskbar control opened a real Notepad window with title-bar controls and a typing textarea. The responsive full-page screenshot at 390px also showed the laptop, keyboard, and touchpad stacking cleanly.
+
+Final refactor verification: the focused simulator preview rendered as a single virtual laptop with no course rail or mission dashboard. Notepad opened from the taskbar. The first on-screen Ctrl+C attempt exposed a state timing issue; the modifier ref was patched, and the retest succeeded: the status changed to `Ctrl + C — selected text copied to the virtual clipboard.` without treating the action as a plain C shortcut. TypeScript and production build checks passed after the fix. The responsive view preserves the laptop, keyboard, and touchpad as the primary experience.

@@ -38,3 +38,21 @@
 - [ ] Add a drag practice interaction and keyboard/mouse mode labels.
 - [ ] Test the production Pages build and interaction flows.
 - [ ] Push the fix to GitHub and verify the Pages URL.
+
+## Focused computer simulator refactor
+
+- [x] Remove course rail, progress cards, and mission-first UI from the primary workspace.
+- [x] Make the virtual desktop the dominant full-screen experience.
+- [x] Add a compact taskbar with Start, search, pinned apps, clock, and system tray behavior.
+- [x] Make windows draggable, focusable, minimizable, maximizable, and closable.
+- [x] Add practical Notepad, File Explorer, Browser, Calculator, and Settings windows.
+- [x] Connect the physical and on-screen keyboard to text fields and shortcuts.
+- [x] Keep touchpad cursor movement, left/right/double-click, and drag behavior visible.
+- [x] Test the simulator as a computer first, then push the simplified version to GitHub Pages.
+
+## Final GitHub source sync
+
+- [ ] Inspect the latest local commit and target main branch.
+- [ ] Sync the complete current source tree into the export workspace.
+- [ ] Commit and push all latest code to GitHub main.
+- [ ] Verify the remote commit and key files.
